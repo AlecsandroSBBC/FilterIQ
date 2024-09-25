@@ -10,7 +10,9 @@ Funcionamento:
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Requisitos: Para que o projeto funcione corretamente, é necessário:
 Criar um arquivo .env com a seguinte chave:
+-
 *API_KEY="CHAVE_DA_SUA_API_OPENAI"*
+-
 Essa chave é necessária para conectar e utilizar a API da OpenAI.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Status Atual: 
