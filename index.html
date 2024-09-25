@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        /* Reset e box-sizing */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #1e1e1e;
+            /* Fundo escuro */
+            color: #e0e0e0;
+            /* Texto claro */
+            padding: 20px;
+        }
+
+        /* Estilo do container de mensagens */
+        .container {
+            max-width: 800px;
+            height: 600px;
+            margin: 0 auto;
+            background: #2c2c2c;
+            /* Fundo do container */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Barra de rolagem personalizada */
+        #messages::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #messages::-webkit-scrollbar-track {
+            background: #2c2c2c;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background-color: #555;
+            /* Cor da barra */
+            border-radius: 10px;
+            border: 2px solid #2c2c2c;
+            /* Espaço ao redor da barra */
+        }
+
+        #messages::-webkit-scrollbar-thumb:hover {
+            background-color: #888;
+            /* Cor da barra ao passar o mouse */
+        }
+
+        /* Container de mensagens */
+        #messages {
+            height: 450px;
+            overflow-y: auto;
+            border: 1px solid #444;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #1e1e1e;
+            /* Fundo escuro */
+            border-radius: 5px;
+        }
+
+        /* Mensagens do chatbot (esquerda) */
+        .message.bot {
+            background-color: #1f5a81;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            max-width: 70%;
+            text-align: left;
+            align-self: flex-start;
+        }
+
+        /* Mensagens do usuário (direita) */
+        .message.user {
+            background-color: #1a7741;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            max-width: 70%;
+            text-align: right;
+            align-self: flex-end;
+        }
+
+        /* Ajusta o layout para flexbox */
+        .message-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Estilo para o input e botão */
+        #input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            margin-right: 10px;
+            background-color: #3c3c3c;
+            color: #e0e0e0;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>FilterIQ</h1>
+        <div id="messages" class="message-container"></div>
+
+        <form id="chatForm">
+            <div id="input-container">
+                <input type="text" id="userMessage" placeholder="Digite sua mensagem...">
+                <button type="submit">Enviar</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const userId = 'user_1';  // Identificador do usuário
+
+        // Carregar o histórico de conversa quando a página é carregada
+        window.onload = function () {
+            fetch(`http://127.0.0.1:5000/historico/${userId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(entry => {
+                        appendMessage(entry.mensagem, true);  // Mensagem do usuário
+                        appendMessage(entry.resposta, false);  // Resposta do chatbot
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar histórico:', error);
+                });
+        };
+
+        document.getElementById('chatForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Evitar recarregamento da página
+            sendMessage(); // Chamar a função para enviar a mensagem
+        });
+
+        function sendMessage() {
+            const message = document.getElementById('userMessage').value;
+
+            if (message.trim() === '') return;
+
+            appendMessage(message, true);  // Adiciona a mensagem do usuário
+            document.getElementById('userMessage').value = '';
+
+            fetch('http://127.0.0.1:5000/conversa', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: userId, mensagem: message })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    appendMessage(data.resposta, false);  // Adiciona a resposta do chatbot
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Ocorreu um erro: ' + error.message);
+                });
+        }
+
+        function appendMessage(message, isUser) {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+
+            if (isUser) {
+                messageElement.classList.add('user');
+                messageElement.textContent = 'Você: ' + message;
+            } else {
+                messageElement.classList.add('bot');
+                messageElement.textContent = 'FilterIQ: ' + message;
+            }
+
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;  // Rolar para o final
+        }
+    </script>
+
+</body>
+
+</html>
