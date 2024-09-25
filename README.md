@@ -9,9 +9,7 @@ Funcionamento:
   Solicitação de Dados: O usuário realiza um request, enviando parâmetros sobre os anúncios que deseja visualizar. Filtragem Inteligente: A API da OpenAI processa esses dados e retorna apenas as informações que atendem às expectativas do usuário, oferecendo uma experiência mais personalizada e eficiente.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Requisitos: Para que o projeto funcione corretamente, é necessário:
-
 Criar um arquivo .env com a seguinte chave:
-
 *API_KEY="CHAVE_DA_SUA_API_OPENAI"*
 Essa chave é necessária para conectar e utilizar a API da OpenAI.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
